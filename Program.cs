@@ -6,10 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using AdminVsCustomerTwo.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+/////
 var connectionString = builder.Configuration.GetConnectionString("AdminVsCustomerTwoIdentityDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AdminVsCustomerTwoIdentityDbContextConnection' not found.");
-
-builder.Services.AddDbContext<AdminVsCustomerTwoIdentityDbContext>(options =>
-    options.UseSqlServer(connectionString));;
+///////////////
+var mySqlDbVersion = ServerVersion.AutoDetect(connectionString);
+/////////////////////////
+builder.Services.AddDbContext<AdminVsCustomerTwoIdentityDbContext>(options => options.UseMySql(connectionString, mySqlDbVersion));
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<AdminVsCustomerTwoIdentityDbContext>();;
