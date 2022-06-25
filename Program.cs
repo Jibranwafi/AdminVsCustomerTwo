@@ -1,8 +1,18 @@
 using AdminVsCustomerTwo.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using AdminVsCustomerTwo.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("AdminVsCustomerTwoIdentityDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AdminVsCustomerTwoIdentityDbContextConnection' not found.");
+
+builder.Services.AddDbContext<AdminVsCustomerTwoIdentityDbContext>(options =>
+    options.UseSqlServer(connectionString));;
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<AdminVsCustomerTwoIdentityDbContext>();;
 
 // Add services to the container.
 builder.Services.AddRazorPages();
@@ -27,5 +37,6 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+app.UseAuthentication();;
 
 app.Run();
