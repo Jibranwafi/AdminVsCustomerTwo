@@ -1,0 +1,138 @@
+﻿@page "/car-table"
+
+<PageTitle>Car Table</PageTitle>
+
+@implements IDisposable
+@using Iuli.Cse19.CarRental.WebApp.Domain
+@using Iuli.Cse19.CarRental.WebApp.ViewModel
+@using Iuli.Cse19.CarRental.WebApp.Services
+@inject CarEntityService CEService
+@inject OwnerEntityService OEService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<h1>Car Table</h1>
+
+<p>Search Box</p>
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary mb-3" @onclick="() => isUpdate = false" data-bs-toggle="modal" data-bs-target="#addCarModal">
+  Add New Car
+</button>
+
+@*search box*@
+@* <div class="input-group rounded" style='width:30%;'>
+  <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
+  <button type="button" class="btn btn-outline-primary">search</button>
+</div> *@
+
+@if (CarList is null)
+{
+    <p><em>Loading... !</em></p>
+}
+else
+{
+    @*Table*@
+    <table class="table" id="datatables">
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th>License Plate</th>
+                <th>Color</th>
+                <th>Rent Price</th>
+                <th>Owner</th>
+                <th>Description</th>
+                <th>Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var Car in CarList)
+            {
+                <tr>
+                   <td>@Car.CarModel</td>
+                   <td>@Car.LicensePlate</td>
+                   <td>@Car.Color</td>
+                   <td>@Car.RentPrice</td>
+                   <th>@Car.OwnerName</th>
+                   <th>@Car.Description</th>
+                   <td>
+                        <div class="row justify-content-around">
+                            <button type="button" class="btn btn-success col-5 d-flex justify-content-center align-items-center"  @onclick="() => fetchCar(Car.CarId)" data-bs-toggle="modal" data-bs-target="#updateCarModal">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger col-5 d-flex justify-content-center align-items-center" @onclick="() => deleteCarInfo(Car.CarId)" >
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>    
+            }
+            
+            
+        </tbody>
+    </table>
+ }
+
+<CarModal modalId="addCarModal" title="Add New Car Information" OwnerList="@OwnerList" newCarInfo=@addCarInfo changedNewCarInfo="modalSubmit"/>
+<CarModal modalId="updateCarModal" title="Edit Car Information" OwnerList="@OwnerList" newCarInfo=@newCarInfo changedNewCarInfo="modalSubmit" />
+
+@code{
+    private List<CarViewModel>? CarList;
+    private List<Owner>? OwnerList;
+    private Car addCarInfo = new Car();
+    private Car newCarInfo = new Car();
+    private bool isUpdate = false;
+        
+    protected async void fetchCar(Guid id)
+    {
+        isUpdate = true;
+        newCarInfo = await CEService.GetCarById(id);
+        StateHasChanged();
+        // JSRuntime.InvokeVoidAsync("console.log", "New Rent Info:", newRentInfo);
+    }
+
+    protected async Task deleteCarInfo(Guid selectedId)
+    {
+        await CEService.DeleteCar(selectedId);
+        NavigationManager.NavigateTo("/car-table", true); 
+    }
+
+    protected async Task modalSubmit()
+    {
+        if (isUpdate)
+        {
+            // JSRuntime.InvokeVoidAsync("console.log", "is update:", isUpdate);
+            await CEService.UpdateCar(newCarInfo);
+            NavigationManager.NavigateTo("/car-table", true); // Refresh the page
+
+        } else {
+            // JSRuntime.InvokeVoidAsync("console.log", "is update:", isUpdate);
+            await CEService.InsertCar(addCarInfo);
+            NavigationManager.NavigateTo("/car-table", true); // Refresh the page
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            CarList = await Task.Run(() => CEService.GetAllCars());
+            // JSRuntime.InvokeVoidAsync("console.log", "OwnerList:", OwnerList);
+            OwnerList = await Task.Run(() => OEService.GetAllOwners());
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+
+    }
+
+    public void Dispose()
+    {
+        JSRuntime.InvokeAsync<object>("DataTablesRemove", "#datatables");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeAsync<object>("DataTablesAdd", "#datatables");
+    }
+}

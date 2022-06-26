@@ -1,0 +1,105 @@
+@page "/rent-info-modal"
+
+@using Iuli.Cse19.CarRental.WebApp.Domain
+@using Iuli.Cse19.CarRental.WebApp.Services
+@inject RentInfoEntityService RCIService
+@inject IJSRuntime JSRuntime
+
+<!-- Modal -->
+<div class="modal fade" id="@modalId" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ex@inject CustomerEntityService CSEServiceampleModalLabel">
+            @title
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" ></button>
+      </div>
+      <div class="modal-body">
+        <form>
+            <div class="mb-3 row">
+                <label for="addCar" class="form-label col-12">Car</label>
+                <div class="btn-group col-12">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Select Car
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        @if (CarList is null)
+                        {
+                            <li><button class="dropdown-item" type="button">Loading</button></li>
+                        } else {
+                            @foreach (var item in CarList)
+                            {
+                                <li><button class="dropdown-item" type="button" @onclick="() => newRentInfo.Car = item">@item.CarModel</button></li>   
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="addCustomer" class="form-label col-12">Customer</label>
+                <div class="btn-group col-12">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Select Customer
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        @if (CustomerList is null)
+                        {
+                            <li><button class="dropdown-item" type="button">Loading</button></li>
+                        } else {
+                            @foreach (var item in CustomerList)
+                            {
+                                <li><button class="dropdown-item" type="button" @onclick="() => newRentInfo.Customer = item">@item.CustomerName</button></li>   
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="addRentStart" class="form-label">Rent Start</label>
+                <input type="datetime-local" class="form-control" id="addRentStart" @bind="@newRentInfo.RentStart">
+            </div>
+            <div class="mb-3">
+                <label for="addRentEnd" class="form-label">Rent End</label>
+                <input type="datetime-local" class="form-control" id="addRentEnd" @bind="@newRentInfo.RentEnd">
+            </div>
+            @* <div class="mb-3">
+                <label for="addPrice" class="form-label">Price</label>
+                <input type="text" class="form-control" id="addPrice" @bind="@newRentInfo.price">
+            </div> *@
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" @onclick="@onSubmit">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@code {
+    [Parameter]
+    public String modalId { get; set; }
+
+    [Parameter]
+    public String title { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<Customer> CustomerList { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<Car> CarList { get; set; }
+    
+    [Parameter]
+    public RentedCarInformation newRentInfo { get; set; }
+
+    [Parameter]
+    public EventCallback<RentedCarInformation> changedNewRentInfo { get; set; }
+
+    protected override void OnParametersSet() { }
+
+    private Task onSubmit()
+    {
+        return changedNewRentInfo.InvokeAsync(newRentInfo);
+    }
+}

@@ -195,6 +195,17 @@ namespace AdminVsCustomerTwo.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
 
+
+
+
+
+
+
+
+
+
+
+
             migrationBuilder.CreateTable(
                 name: "Car",
                 columns: table => new
@@ -291,6 +302,18 @@ namespace AdminVsCustomerTwo.Migrations
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
+
+
+
+
+
+
+
+
+
+
+
+
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",

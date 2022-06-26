@@ -1,0 +1,111 @@
+@page "/car-modal"
+
+@using Iuli.Cse19.CarRental.WebApp.Domain
+@using Iuli.Cse19.CarRental.WebApp.Services
+@using Iuli.Cse19.CarRental.WebApp.ViewModel
+@using System.ComponentModel
+@inject CarEntityService CEService
+@inject IJSRuntime JSRuntime
+
+<!-- Modal -->
+<div class="modal fade" id="@modalId" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+           @title
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <form>
+            <div class="md-form mb-4">
+                <i class="fas fa-user prefix grey-text"></i>
+                <label data-error="wrong" data-success="right" for="form3">Car Model</label>
+                <input type="text" id="form3" class="form-control validate" @bind="newCarInfo.CarModel">
+            </div>
+            
+            <div class="md-form mb-4">
+                <i class="fas fa-envelope prefix grey-text"></i>
+                <label data-error="wrong" data-success="right" for="form2">License Plate</label>
+                <input type="text" id="form2" class="form-control validate" @bind="newCarInfo.LicensePlate">
+            </div>
+            <div class="md-form mb-4">
+                <i class="fas fa-envelope prefix grey-text"></i>
+                <label data-error="wrong" data-success="right" for="form2">Color</label>
+                <input type="text" id="form2" class="form-control validate" @bind="newCarInfo.Color">
+            </div>
+         
+            <div class="md-form mb-4">
+                <i class="fas fa-envelope prefix grey-text"></i>
+                <label data-error="wrong" data-success="right" for="form2">Rent Price</label>
+                <input type="text" id="form2" class="form-control validate" @bind="newCarInfo.RentPrice">
+            </div>
+            @*<div class="md-form mb-4">
+                <i class="fas fa-envelope prefix grey-text"></i>
+                <label data-error="wrong" data-success="right" for="form2">Car Owner</label>
+                <input type="text" id="form2" class="form-control validate" @bind="newCarInfo.Owner">
+            </div>*@
+            <div class="mb-3 row">
+                <label for="addCar" class="form-label col-12">Owner</label>
+                <input type="text" id="form2" class="form-control validate" @bind="selectedOwner.OwnerName" disabled>
+                <div class="btn-group col-12">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Select Owner
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        @if (OwnerList is null)
+                        {
+                            <li><button class="dropdown-item" type="button">Loading</button></li>
+                        } else {
+                            @foreach (var item in OwnerList)
+                            {
+                                <li><button class="dropdown-item" type="button" @onclick="() => {
+                                    newCarInfo.Owner = item;
+                                    selectedOwner = item;}">@item.OwnerName</button></li>   
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="md-form mb-4">
+                <i class="fas fa-envelope prefix grey-text"></i>
+                <label data-error="wrong" data-success="right" for="form2">Description</label>
+                <input type="text" id="form2" class="form-control validate" @bind="newCarInfo.Description">
+            </div>
+          </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" @onclick="@onSubmit">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@code {
+    [Parameter]
+    public string modalId { get; set; }
+
+    [Parameter]
+    public String title { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<Owner> OwnerList { get; set; }
+
+    [Parameter]
+    public Car newCarInfo { get; set; }
+
+    private Owner selectedOwner { get; set; } = new Owner();
+
+
+    [Parameter]
+    public EventCallback<Car> changedNewCarInfo { get; set; }
+
+    protected override void OnParametersSet() { }
+
+    private Task onSubmit()
+    {
+        return changedNewCarInfo.InvokeAsync(newCarInfo);
+    }
+}

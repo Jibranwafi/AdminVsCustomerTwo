@@ -1,0 +1,130 @@
+﻿@page "/owner-table"
+
+<PageTitle>Owner</PageTitle>
+
+@implements IDisposable
+@using Iuli.Cse19.CarRental.WebApp.Domain
+@using Iuli.Cse19.CarRental.WebApp.ViewModel
+@using Iuli.Cse19.CarRental.WebApp.Services
+@inject OwnerEntityService OESService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<h1>Owner</h1>
+
+<p>Owner Table and Search Box</p>
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary mb-3" @onclick="() => isUpdate = false" data-bs-toggle="modal" data-bs-target="#addOwnerModal">
+  Add New Car Owner
+</button>
+
+@*search box*@
+@* <div class="input-group rounded" style='width:30%;'>
+  <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
+  <button type="button" class="btn btn-outline-primary">search</button>
+</div> *@
+
+@if (OwnerList is null)
+{
+    <p><em>Loading... !</em></p>
+}
+else
+{
+    @*Table*@
+    <table class="table" id="datatables">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Address</th>
+                <th scope="col">City</th>
+                <th scope="col">Phone</th>
+                <th scope="col">Email</th>
+                <th scope="col">Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var Owne in OwnerList)
+            {
+                <tr>
+                    <td scope="row">@Owne.OwnerName</td>
+                    <td>@Owne.OwnerAddress</td>
+                    <td>@Owne.OwnerCity</td>
+                    <td>@Owne.OwnerPhone</td>
+                    <td>@Owne.OwnerEmail</td>
+                    <td>
+                        <div class="row justify-content-around">
+                            <button type="button" class="btn btn-success col-5 d-flex justify-content-center align-items-center"  @onclick="() => fetchOwner(Owne.OwnerId)" data-bs-toggle="modal" data-bs-target="#updateOwnerModal">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger col-5 d-flex justify-content-center align-items-center" @onclick="() => deleteOwnerInfo(Owne.OwnerId)" >
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<OwnerModal modalId="addOwnerModal" title="Add New Owner Information" newOwnerInfo=@addOwnerInfo changedNewOwnerInfo="modalSubmit"/>
+<OwnerModal modalId="updateOwnerModal" title="Edit Owner Information" newOwnerInfo=@newOwnerInfo changedNewOwnerInfo="modalSubmit" />
+
+@code {
+    private List<OwnerViewModel>? OwnerList;
+    private Owner addOwnerInfo = new Owner();
+    private Owner newOwnerInfo = new Owner();
+    private bool isUpdate = false;
+
+    protected async void fetchOwner(Guid id)
+    {
+        isUpdate = true;
+        newOwnerInfo = await OESService.GetOwnerById(id);
+        StateHasChanged();
+        // JSRuntime.InvokeVoidAsync("console.log", "New Rent Info:", newRentInfo);
+    }
+
+    protected async Task deleteOwnerInfo(Guid selectedId)
+    {
+        await OESService.DeleteOwnerById(selectedId);
+        NavigationManager.NavigateTo("/owner-table", true); // Refresh the page
+    }
+
+    protected async Task modalSubmit()
+    {
+        if (isUpdate)
+        {
+            // JSRuntime.InvokeVoidAsync("console.log", "is update:", isUpdate);
+            await OESService.UpdateOwner(newOwnerInfo);
+            NavigationManager.NavigateTo("/owner-table", true); // Refresh the page
+
+        } else {
+            // JSRuntime.InvokeVoidAsync("console.log", "is update:", isUpdate);
+            await OESService.InsertOwner(addOwnerInfo);
+            NavigationManager.NavigateTo("/owner-table", true); // Refresh the page
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            OwnerList = await Task.Run(() => OESService.GetAllOwnersInfo());
+            // JSRuntime.InvokeVoidAsync("console.log", "OwnerList:", OwnerList);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+
+    }
+
+    public void Dispose()
+    {
+        JSRuntime.InvokeAsync<object>("DataTablesRemove", "#datatables");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeAsync<object>("DataTablesAdd", "#datatables");
+    }
+}

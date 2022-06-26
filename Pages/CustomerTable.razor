@@ -1,0 +1,130 @@
+﻿@page "/Customer-table"
+
+<PageTitle>Owner</PageTitle>
+
+@implements IDisposable
+@using Iuli.Cse19.CarRental.WebApp.Domain
+@using Iuli.Cse19.CarRental.WebApp.ViewModel
+@using Iuli.Cse19.CarRental.WebApp.Services
+@inject CustomerEntityService CSEService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<h1>Customer</h1>
+
+<p>Customer Table and Search Box</p>
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary mb-3" @onclick="() => isUpdate = false" data-bs-toggle="modal" data-bs-target="#CustomerModal">
+  Add New Car Customer
+</button>
+
+@*search box*@
+@* <div class="input-group rounded" style='width:30%;'>
+  <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
+  <button type="button" class="btn btn-outline-primary">search</button>
+</div> *@
+
+@if (CustomerList is null)
+{
+    <p><em>Loading... !</em></p>
+}
+else
+{
+    @*Table*@
+    <table class="table" id="datatables">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Address</th>
+                <th scope="col">City</th>
+                <th scope="col">Phone</th>
+                <th scope="col">Email</th>
+                <th scope="col">Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var Customer in CustomerList)
+            {
+                <tr>
+                    <td scope="row">@Customer.CustomerName</td>
+                    <td>@Customer.CustomerAddress</td>
+                    <td>@Customer.CustomerCity</td>
+                    <td>@Customer.CustomerPhone</td>
+                    <td>@Customer.CustomerEmail</td>
+                    <td>
+                        <div class="row justify-content-around">
+                            <button type="button" class="btn btn-success col-5 d-flex justify-content-center align-items-center"  @onclick="() => fetchCustomer(Customer.CustomerId)" data-bs-toggle="modal" data-bs-target="#updateCustomerModal">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger col-5 d-flex justify-content-center align-items-center" @onclick="() => deleteCustomerInfo(Customer.CustomerId)" >
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<CustomerModal modalId="CustomerModal" title="Add New Customer Information" newCustomerInfo=@addCustomerInfo changedNewCustomerInfo="modalSubmit"/>
+<CustomerModal modalId="updateCustomerModal" title="Edit Customer Information" newCustomerInfo=@newCustomerInfo changedNewCustomerInfo="modalSubmit" />
+
+@code {
+    private List<CustomerViewModel>? CustomerList;
+    private Customer addCustomerInfo = new Customer();
+    private Customer newCustomerInfo = new Customer();
+    private bool isUpdate = false;
+
+    protected async void fetchCustomer(Guid id)
+    {
+        isUpdate = true;
+        newCustomerInfo = await CSEService.GetCustomerById(id);
+        StateHasChanged();
+        // JSRuntime.InvokeVoidAsync("console.log", "New Rent Info:", newRentInfo);
+    }
+
+    protected async Task deleteCustomerInfo(Guid selectedId)
+    {
+        await CSEService.DeleteCustomerById(selectedId);
+        NavigationManager.NavigateTo("/Customer-table", true); // Refresh the page
+    }
+
+    protected async Task modalSubmit()
+    {
+        if (isUpdate)
+        {
+            // JSRuntime.InvokeVoidAsync("console.log", "is update:", isUpdate);
+            await CSEService.UpdateCustomer(newCustomerInfo);
+            NavigationManager.NavigateTo("/Customer-table", true); // Refresh the page
+
+        } else {
+            // JSRuntime.InvokeVoidAsync("console.log", "is update:", isUpdate);
+            await CSEService.InsertCustomer(addCustomerInfo);
+            NavigationManager.NavigateTo("/Customer-table", true); // Refresh the page
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            CustomerList = await Task.Run(() => CSEService.GetAllCustomersInfo());
+            // JSRuntime.InvokeVoidAsync("console.log", "CustomerList:", CustomerList);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+
+    }
+
+    public void Dispose()
+    {
+        JSRuntime.InvokeAsync<object>("DataTablesRemove", "#datatables");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeAsync<object>("DataTablesAdd", "#datatables");
+    }
+}

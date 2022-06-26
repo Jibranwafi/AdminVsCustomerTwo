@@ -1,0 +1,147 @@
+@page "/rented-car-info"
+
+<PageTitle>Rented Car Information</PageTitle>
+
+@implements IDisposable
+@using Iuli.Cse19.CarRental.WebApp.Domain
+@using Iuli.Cse19.CarRental.WebApp.ViewModel
+@using Iuli.Cse19.CarRental.WebApp.Services
+@inject RentInfoEntityService RCIService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<h1>Rented Car Information</h1>
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary mb-3" @onclick="() => isUpdate = false" data-bs-toggle="modal" data-bs-target="#rentInfoModal">
+  Add New Rent Info
+</button>
+
+<br />
+
+@if (RentInformation is null)
+{
+    <p><em>Loading... !</em></p>
+}
+else
+{
+    <table class="table" id="datatables">
+        <thead>
+            <tr>
+                <th scope="col">RentId</th>
+                <th scope="col">Car Model</th>
+                <th scope="col">Car Licence Plate</th>
+                <th scope="col">Customer Name</th>
+                <th scope="col">Customer Phone</th>
+                <th scope="col">Rent Start</th>
+                <th scope="col">Rent End</th>
+                <th scope="col">Price</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var Rent in RentInformation)
+            {
+                <tr>
+                    <th scope="row">@Rent.RentId</th>
+                    <td>@Rent.CarModel</td>
+                    <td>@Rent.CarLicencePlate</td>
+                    <td>@Rent.CustomerName</td>
+                    <td>@Rent.CustomerPhone</td>
+                    <td>@Rent.RentStart</td>
+                    <td>@Rent.RentEnd</td>
+                    <td>@Rent.price</td>
+                    <td>
+                        <div class="row justify-content-around">
+                            <button type="button" class="btn btn-success col-5 d-flex justify-content-center align-items-center"  @onclick="() => fetchCar(Rent.RentId)" data-bs-toggle="modal" data-bs-target="#updateInfoModal">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger col-5 d-flex justify-content-center align-items-center" @onclick="() => deleteRentInfo(Rent.RentId)" >
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<RentInfoModal modalId="updateInfoModal" title="Update Rented Car Information" CustomerList="@CustomerList" CarList="@CarList" newRentInfo="@newRentInfo" changedNewRentInfo="modalSubmit" />
+<RentInfoModal modalId="rentInfoModal" title="Add Rented Car Information" CustomerList="@CustomerList" CarList="@CarList" newRentInfo="@addRentInfo" changedNewRentInfo="modalSubmit" />
+
+
+@code {
+    private List<RentedCarViewModel>? RentInformation;
+    private List<Customer>? CustomerList;
+    private List<Car> CarList = new List<Car>();
+    private RentedCarInformation addRentInfo = new RentedCarInformation();
+    private RentedCarInformation newRentInfo = new RentedCarInformation();
+    private bool isUpdate = false;
+
+    protected async void fetchCar(Guid id)
+    {
+        isUpdate = true;
+        newRentInfo = await RCIService.GetRentInfoById(id);
+        StateHasChanged();
+        // JSRuntime.InvokeVoidAsync("console.log", "New Rent Info:", newRentInfo);
+    }
+
+    protected async Task deleteRentInfo(Guid selectedId)
+    {
+        await RCIService.DeleteRentInfoById(selectedId);
+        NavigationManager.NavigateTo("/rented-car-info", true); // Refresh the page
+    }
+
+    protected async Task modalSubmit()
+    {
+        if (isUpdate)
+        {
+            // JSRuntime.InvokeVoidAsync("console.log", "is update:", isUpdate);
+            var timespan = (newRentInfo.RentEnd - newRentInfo.RentStart);
+            var difference = timespan.Days + (timespan.Hours > 0 ? 1 : 0);
+            newRentInfo.price = (newRentInfo.Car.RentPrice * difference).ToString();
+            await RCIService.UpdateRentInfo(newRentInfo);
+            NavigationManager.NavigateTo("/rented-car-info", true); // Refresh the page
+            // JSRuntime.InvokeVoidAsync("console.log", "New Rent Info:", newRentInfo);
+
+        } else {
+            // JSRuntime.InvokeVoidAsync("console.log", "is update:", isUpdate);
+            var timespan = (addRentInfo.RentEnd - addRentInfo.RentStart);
+            var difference = timespan.Days + (timespan.Hours > 0 ? 1 : 0);
+            addRentInfo.RentId = Guid.NewGuid();
+            addRentInfo.price = (addRentInfo.Car.RentPrice * difference).ToString();
+            await RCIService.InsertRentInfo(addRentInfo);
+            NavigationManager.NavigateTo("/rented-car-info", true); // Refresh the page
+            // JSRuntime.InvokeVoidAsync("console.log", "New Rent Info:", addRentInfo);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            RentInformation = await Task.Run(() => RCIService.GetAllRentInfo());
+            // JSRuntime.InvokeVoidAsync("console.log", "Rent Information:", RentInformation);
+            CustomerList = await Task.Run(() => RCIService.GetAllCustomers());
+            // JSRuntime.InvokeVoidAsync("console.log", "Customer List:", CustomerList);
+            CarList = await Task.Run(() => RCIService.GetAllCars());
+            // JSRuntime.InvokeVoidAsync("console.log", "Car List:", CarList);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+
+    }
+
+    public void Dispose()
+    {
+        JSRuntime.InvokeAsync<object>("DataTablesRemove", "#datatables");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeAsync<object>("DataTablesAdd", "#datatables");
+    }
+}
