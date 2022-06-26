@@ -1,4 +1,4 @@
-﻿using Iuli.Cse19.CarRental.WebApp.Infrastructure;
+﻿using AdminVsCustomerTwo.Areas.Identity.Data;
 
 namespace Iuli.Cse19.CarRental.WebApp.Common
 {

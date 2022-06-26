@@ -265,6 +265,163 @@ namespace AdminVsCustomerTwo.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
+            modelBuilder.Entity("Iuli.Cse19.CarRental.WebApp.Domain.Car", b =>
+            {
+                b.Property<Guid>("CarId")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("char(36)");
+
+                b.Property<string>("CarModel")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("Color")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("Description")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("LicensePlate")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<Guid>("OwnerId")
+                    .HasColumnType("char(36)");
+
+                b.Property<int>("RentPrice")
+                    .HasColumnType("int");
+
+                b.HasKey("CarId");
+
+                b.HasIndex("OwnerId");
+
+                b.ToTable("Car");
+            });
+
+            modelBuilder.Entity("Iuli.Cse19.CarRental.WebApp.Domain.Customer", b =>
+            {
+                b.Property<Guid>("CustomerId")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("char(36)");
+
+                b.Property<string>("CustomerAddress")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("CustomerCity")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("CustomerEmail")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("CustomerName")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("CustomerPhone")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.HasKey("CustomerId");
+
+                b.ToTable("Customer");
+            });
+
+            modelBuilder.Entity("Iuli.Cse19.CarRental.WebApp.Domain.Owner", b =>
+            {
+                b.Property<Guid>("OwnerId")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("char(36)");
+
+                b.Property<string>("OwnerAddress")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("OwnerCity")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("OwnerEmail")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("OwnerName")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.Property<string>("OwnerPhone")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.HasKey("OwnerId");
+
+                b.ToTable("Owner");
+            });
+
+            modelBuilder.Entity("AdminVsCustomerTwo.Domain.RentedCarInformation", b =>
+            {
+                b.Property<Guid>("RentId")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("char(36)");
+
+                b.Property<Guid>("CarId")
+                    .HasColumnType("char(36)");
+
+                b.Property<Guid>("CustomerId")
+                    .HasColumnType("char(36)");
+
+                b.Property<DateTime>("RentEnd")
+                    .HasColumnType("datetime(6)");
+
+                b.Property<DateTime>("RentStart")
+                    .HasColumnType("datetime(6)");
+
+                b.Property<string>("price")
+                    .IsRequired()
+                    .HasColumnType("longtext");
+
+                b.HasKey("RentId");
+
+                b.HasIndex("CarId");
+
+                b.HasIndex("CustomerId");
+
+                b.ToTable("RentInfo");
+            });
+
+            modelBuilder.Entity("AdminVsCustomerTwo.Domain.Car", b =>
+            {
+                b.HasOne("Iuli.Cse19.CarRental.WebApp.Domain.Owner", "Owner")
+                    .WithMany()
+                    .HasForeignKey("OwnerId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("Owner");
+            });
+
+            modelBuilder.Entity("AdminVsCustomerTwo.Domain.RentedCarInformation", b =>
+            {
+                b.HasOne("Iuli.Cse19.CarRental.WebApp.Domain.Car", "Car")
+                    .WithMany()
+                    .HasForeignKey("CarId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.HasOne("AdminVsCustomerTwo.Domain.Customer", "Customer")
+                    .WithMany()
+                    .HasForeignKey("CustomerId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("Car");
+
+                b.Navigation("Customer");
+            });
 #pragma warning restore 612, 618
         }
     }

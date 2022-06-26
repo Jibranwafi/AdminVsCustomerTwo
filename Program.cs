@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using AdminVsCustomerTwo.Areas.Identity.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using AdminVsCustomerTwo.Areas.Identity;
+using Iuli.Cse19.CarRental.WebApp.Services;
+using Iuli.Cse19.CarRental.WebApp.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 /////
@@ -23,6 +25,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+
+builder.Services.AddScoped<CustomerEntityService>();
+builder.Services.AddScoped<OwnerEntityService>();
+builder.Services.AddScoped<CarEntityService>();
+builder.Services.AddScoped<RentInfoEntityService>();
+builder.Services.AddScoped<IAppDbContext>(provider => provider.GetService<AdminVsCustomerTwoIdentityDbContext>());
+
 
 var app = builder.Build();
 
