@@ -7,15 +7,14 @@ using Iuli.Cse19.CarRental.WebApp.ViewModel;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AdminVsCustomerTwo.Areas.Identity.Data;
-using static AdminVsCustomerTwo.Areas.Identity.Data.AdminVsCustomerTwoIdentityDbContext;
 
 namespace Iuli.Cse19.CarRental.WebApp.Services
 {
     public class RentInfoEntityService
     {
-        private readonly AppDbContext _appDbContext;
+        private readonly AdminVsCustomerTwoIdentityDbContext _appDbContext;
 
-        public RentInfoEntityService(AppDbContext context)
+        public RentInfoEntityService(AdminVsCustomerTwoIdentityDbContext context)
         {
             _appDbContext = context;
         }

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using AdminVsCustomerTwo.Areas.Identity;
 using Iuli.Cse19.CarRental.WebApp.Services;
 using Iuli.Cse19.CarRental.WebApp.Common;
-using static AdminVsCustomerTwo.Areas.Identity.Data.AdminVsCustomerTwoIdentityDbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 /////
@@ -31,7 +30,7 @@ builder.Services.AddScoped<CustomerEntityService>();
 builder.Services.AddScoped<OwnerEntityService>();
 builder.Services.AddScoped<CarEntityService>();
 builder.Services.AddScoped<RentInfoEntityService>();
-builder.Services.AddScoped<IAppDbContext>(provider => provider.GetService<AppDbContext>());
+builder.Services.AddScoped<IAppDbContext>(provider => provider.GetService<AdminVsCustomerTwoIdentityDbContext>());
 
 
 var app = builder.Build();
