@@ -6,14 +6,15 @@ using Iuli.Cse19.CarRental.WebApp.Domain;
 using Iuli.Cse19.CarRental.WebApp.ViewModel;
 using System;
 using AdminVsCustomerTwo.Areas.Identity.Data;
+using static AdminVsCustomerTwo.Areas.Identity.Data.AdminVsCustomerTwoIdentityDbContext;
 
 namespace Iuli.Cse19.CarRental.WebApp.Services
 {
     public class CustomerEntityService
     {
-        private readonly AdminVsCustomerTwoIdentityDbContext _appDbContext;
+        private readonly AppDbContext _appDbContext;
 
-        public CustomerEntityService(AdminVsCustomerTwoIdentityDbContext context)
+        public CustomerEntityService(AppDbContext context)
         {
             _appDbContext = context;
         }
