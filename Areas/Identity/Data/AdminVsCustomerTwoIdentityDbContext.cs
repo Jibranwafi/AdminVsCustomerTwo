@@ -8,10 +8,6 @@ namespace AdminVsCustomerTwo.Areas.Identity.Data;
 
 public class AdminVsCustomerTwoIdentityDbContext : IdentityDbContext<IdentityUser>, IAppDbContext
 {
-    public AdminVsCustomerTwoIdentityDbContext(DbContextOptions<AdminVsCustomerTwoIdentityDbContext> options)
-        : base(options)
-    {
-    }
 
     public DbSet<Customer> Customer { get; set; }
 
@@ -20,6 +16,11 @@ public class AdminVsCustomerTwoIdentityDbContext : IdentityDbContext<IdentityUse
 
     public DbSet<RentedCarInformation> RentInfo { get; set; }
 
+
+    public AdminVsCustomerTwoIdentityDbContext(DbContextOptions<AdminVsCustomerTwoIdentityDbContext> options)
+        : base(options)
+    {
+    }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
